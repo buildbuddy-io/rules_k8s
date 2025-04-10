@@ -282,7 +282,7 @@ _common_attrs = {
     "namespace": attr.string(),
     "resolver": attr.label(
         default = Label("//k8s/go/cmd/resolver"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
@@ -294,7 +294,7 @@ _common_attrs = {
     "user": attr.string(),
     "_stamper": attr.label(
         default = Label("//k8s:stamper"),
-        cfg = "host",
+        cfg = "exec",
         executable = True,
         allow_files = True,
     ),
