@@ -25,7 +25,7 @@ load(
 )
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
-def deps(go_version = "1.18.3"):
+def deps(go_version = "1.24.2"):
     """Import dependencies for Go binaries in rules_k8s.
 
        This macro assumes k8s_repositories in //k8s:k8s.bzl has been called
@@ -42,6 +42,6 @@ def deps(go_version = "1.18.3"):
         go_repository,
         name = "com_github_google_go_cmp",
         importpath = "github.com/google/go-cmp",
-        sum = "h1:BKbKCqvP6I+rmFHt06ZmyQtvB8xAkWdhFyr0ZUNZcxQ=",
-        version = "v0.5.6",
+        sum = "h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=",
+        version = "v0.6.0",
     )
