@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,3 +34,10 @@ gazelle(
 
 # rules_docker's BUILD files follow the go_default_library naming convention
 # gazelle:go_naming_convention_external go_default_library
+
+# Update requirement_lock.txt with the latest dependencies.
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.txt",
+    requirements_txt = "requirements_lock.txt",
+)

@@ -121,9 +121,12 @@ def kubectl_configure(name, **kwargs):
                 or label. This can't be used with 'build_srcs'.
     """
     build_srcs = False
-    if "build_srcs" in kwargs and "kubectl_path" in kwargs:
+    if "build_srcs" in kwargs and "kubectl_path" in kwargs and kwargs["kubectl_path"]:
         fail("Attributes 'build_srcs' and 'kubectl_path' can't be specified at" +
-             " the same time")
+             " the same time: {} {}".format(
+                 kwargs["build_srcs"],
+                 kwargs["kubectl_path"],
+             ))
     if "build_srcs" in kwargs and kwargs["build_srcs"]:
         build_srcs = True
         _ensure_all_provided(

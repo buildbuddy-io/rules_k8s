@@ -55,55 +55,55 @@ def _impl(repository_ctx):
     overrides = []
     if repository_ctx.attr.cluster:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "cluster",
             repository_ctx.attr.cluster,
         ))
 
     if repository_ctx.attr.context:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "context",
             repository_ctx.attr.context,
         ))
     if repository_ctx.attr.user:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "user",
             repository_ctx.attr.user,
         ))
 
     if repository_ctx.attr.namespace:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "namespace",
             repository_ctx.attr.namespace,
         ))
 
     if repository_ctx.attr.kind:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "kind",
             repository_ctx.attr.kind,
         ))
 
     if repository_ctx.attr.kubeconfig:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "kubeconfig",
             repository_ctx.attr.kubeconfig,
         ))
 
     if repository_ctx.attr.image_chroot:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "image_chroot",
             repository_ctx.attr.image_chroot,
         ))
 
     if repository_ctx.attr.resolver:
         overrides.append(_override(
-            repository_ctx.attr.name,
+            repository_ctx.original_name,
             "resolver",
             repository_ctx.attr.resolver,
         ))
@@ -117,7 +117,7 @@ def {name}(**kwargs):
   {overrides}
   _k8s_object(**kwargs)
 """.format(
-        name = repository_ctx.attr.name,
+        name = repository_ctx.original_name,
         overrides = "\n".join(overrides),
     ))
 

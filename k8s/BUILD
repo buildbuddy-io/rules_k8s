@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@subpar//:subpar.bzl", "par_binary")
+load("@pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -30,26 +31,19 @@ exports_files([
     "diff.sh.tpl",
 ])
 
-par_binary(
+py_binary(
     name = "stamper",
     srcs = ["stamper.py"],
-    compiler_args = ["--interpreter=bazel_tools/tools/python/py3wrapper.sh"],
     main = "stamper.py",
-    python_version = "PY3",
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
 
-par_binary(
+py_binary(
     name = "reverser",
     srcs = ["reverser.py"],
-    compiler_args = ["--interpreter=bazel_tools/tools/python/py3wrapper.sh"],
     main = "reverser.py",
-    python_version = "PY3",
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
-    deps = select({
-        "@bazel_tools//tools/python:PY2": ["@com_github_yaml_pyyaml//:yaml"],
-        "@bazel_tools//tools/python:PY3": ["@com_github_yaml_pyyaml//:yaml3"],
-    }),
+    deps = [
+        requirement("pyyaml"),
+    ],
 )

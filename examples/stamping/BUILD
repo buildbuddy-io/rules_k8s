@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
-load("@py_deps//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 

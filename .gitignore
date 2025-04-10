@@ -48,3 +48,6 @@ node_modules
 
 # Test binary
 hellogrpc_*_client
+
+# MODULE.bazel stuff, for now
+MODULE.bazel.lock
