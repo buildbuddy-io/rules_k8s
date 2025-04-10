@@ -19,7 +19,7 @@ import unittest
 import yaml
 
 def TestData(name):
-  return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_k8s', name)
+  return os.path.join(os.environ['TEST_SRCDIR'], '_main', name)
 
 class SubstitutionTest(unittest.TestCase):
 
