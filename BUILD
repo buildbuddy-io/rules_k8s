@@ -25,8 +25,6 @@ exports_files([
 
 # Make Gazelle ignore Go files in the examples directory used in e2e tests.
 # gazelle:exclude examples
-# rules_docker's BUILD files follow the go_default_library naming convention
-# gazelle:go_naming_convention_external go_default_library
 gazelle(
     name = "gazelle",
     prefix = "github.com/bazelbuild/rules_k8s",

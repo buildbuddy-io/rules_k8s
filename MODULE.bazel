@@ -14,11 +14,11 @@ bazel_dep(
 )
 archive_override(
     module_name = "rules_docker",
-    integrity = "sha256-A5jYBCeY4s0eJNYKrFYV6pnRSFekMRSilmr+xVF/Q+s=",
-    strip_prefix = "rules_docker-d517338f5a4e29a11b6077ec39e533a518424b53",
+    integrity = "sha256-weeds2FtoI9ugQo7q3YYOUnmkVxdmW9nS7GDV7G4EoM=",
+    strip_prefix = "rules_docker-af99acc68556f43ecb5b90b037480650d7d47c02",
     # This is BuildBuddy fork of rules_docker with bzlmod support.
     # Diff: https://github.com/bazelbuild/rules_docker/compare/master...buildbuddy-io:rules_docker:sluongng/bzlmod-enable
-    urls = ["https://github.com/buildbuddy-io/rules_docker/archive/d517338f5a4e29a11b6077ec39e533a518424b53.tar.gz"],
+    urls = ["https://github.com/buildbuddy-io/rules_docker/archive/af99acc68556f43ecb5b90b037480650d7d47c02.tar.gz"],
 )
 
 bazel_dep(name = "platforms", version = "0.0.11")
