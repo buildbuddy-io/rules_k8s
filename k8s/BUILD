@@ -11,10 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-load("@pip//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_binary")
-
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -31,19 +27,12 @@ exports_files([
     "diff.sh.tpl",
 ])
 
-py_binary(
+alias(
     name = "stamper",
-    srcs = ["stamper.py"],
-    main = "stamper.py",
-    visibility = ["//visibility:public"],
+    actual = "//k8s/go/cmd/stamper",
 )
 
-py_binary(
+alias(
     name = "reverser",
-    srcs = ["reverser.py"],
-    main = "reverser.py",
-    visibility = ["//visibility:public"],
-    deps = [
-        requirement("pyyaml"),
-    ],
+    actual = "//k8s/go/cmd/reverser",
 )

@@ -16,7 +16,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Flags defines the flags that rules_k8s may pass to the resolver
@@ -297,9 +297,9 @@ func (r *Resolver) publishSingle(spec imageSpec, stamper *compat.Stamper) (strin
 }
 
 // publish publishes the image with the given spec. It returns:
-// 1. A map from the unstamped & tagged image name to the stamped image name
-//    referenced by its sha256 digest.
-// 2. A set of unstamped & tagged image names that were pushed to the registry.
+//  1. A map from the unstamped & tagged image name to the stamped image name
+//     referenced by its sha256 digest.
+//  2. A set of unstamped & tagged image names that were pushed to the registry.
 func (r *Resolver) publish(spec []imageSpec, stamper *compat.Stamper) (map[string]string, map[string]bool, error) {
 	overrides := make(map[string]string)
 	unseen := make(map[string]bool)
@@ -326,59 +326,26 @@ type yamlResolver struct {
 	// strResolver is called to resolve every individual string encountered in
 	// the k8s YAML template. The functor interface allows mocking the string
 	// resolver in unit tests.
-	strResolver func(*yamlResolver, string) (string, error)
+	strResolver func(string) (string, error)
 	// numDocs stores the number of documents the resolver worked on when
 	// resolveYAML was called. This is used for testing only.
 	numDocs int
-}
-
-// resolveString resolves a string found in the k8s YAML template by replacing
-// a tagged image name with an image name referenced by its sha256 digest. If
-// the given string doesn't represent a tagged image, it is returned as is.
-// The given resolver is also modified:
-// 1. If the given string was a tagged image, the resolved image lookup in the
-//    given resolver is updated to include a mapping from the given string to
-//    the resolved image name.
-// 2. If the given string was a tagged image, the set of unseen images in the
-//    given resolver is updated to exclude the given string.
-// The resolver is best-effort, i.e., if any errors are encountered, the given
-// string is returned as is.
-func resolveString(r *yamlResolver, s string) (string, error) {
-	if _, ok := r.unseen[s]; ok {
-		delete(r.unseen, s)
-	}
-	o, ok := r.resolvedImages[s]
-	if ok {
-		return o, nil
-	}
-	t, err := name.NewTag(s, name.StrictValidation)
-	if err != nil {
-		return s, nil
-	}
-	auth, err := authn.DefaultKeychain.Resolve(t.Context())
-	if err != nil {
-		return s, nil
-	}
-	desc, err := remote.Get(t, remote.WithAuth(auth))
-	if err != nil {
-		return s, nil
-	}
-	resolved := fmt.Sprintf("%s/%s@%v", t.Context().RegistryStr(), t.Context().RepositoryStr(), desc.Digest)
-	r.resolvedImages[s] = resolved
-	return resolved, nil
 }
 
 // resolveItem resolves the given YAML object if it's a string or recursively
 // walks into the YAML collection type.
 func (r *yamlResolver) resolveItem(i interface{}) (interface{}, error) {
 	if s, ok := i.(string); ok {
-		return r.strResolver(r, s)
+		return r.strResolver(s)
 	}
 	if l, ok := i.([]interface{}); ok {
 		return r.resolveList(l)
 	}
 	if m, ok := i.(map[interface{}]interface{}); ok {
 		return r.resolveMap(m)
+	}
+	if m, ok := i.(map[string]interface{}); ok {
+		return r.resolveStringMap(m)
 	}
 	return i, nil
 }
@@ -392,6 +359,22 @@ func (r *yamlResolver) resolveList(l []interface{}) ([]interface{}, error) {
 			return nil, fmt.Errorf("error resolving item %v in list: %v", i, err)
 		}
 		result = append(result, o)
+	}
+	return result, nil
+}
+
+func (r *yamlResolver) resolveStringMap(m map[string]interface{}) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	for k, v := range m {
+		rk, err := r.strResolver(k)
+		if err != nil {
+			return nil, fmt.Errorf("error resolving key %v in map: %v", k, err)
+		}
+		rv, err := r.resolveItem(v)
+		if err != nil {
+			return nil, fmt.Errorf("error resolving value %v in map: %v", v, err)
+		}
+		result[rk] = rv
 	}
 	return result, nil
 }
@@ -529,7 +512,43 @@ func resolveTemplate(templateFile string, resolvedImages map[string]string, unse
 	r := yamlResolver{
 		resolvedImages: resolvedImages,
 		unseen:         unseen,
-		strResolver:    resolveString,
+	}
+
+	// resolveString resolves a string found in the k8s YAML template by replacing
+	// a tagged image name with an image name referenced by its sha256 digest. If
+	// the given string doesn't represent a tagged image, it is returned as is.
+	// The given resolver is also modified:
+	//  1. If the given string was a tagged image, the resolved image lookup in the
+	//     given resolver is updated to include a mapping from the given string to
+	//     the resolved image name.
+	//  2. If the given string was a tagged image, the set of unseen images in the
+	//     given resolver is updated to exclude the given string.
+	//
+	// The resolver is best-effort, i.e., if any errors are encountered, the given
+	// string is returned as is.
+	r.strResolver = func(s string) (string, error) {
+		if _, ok := r.unseen[s]; ok {
+			delete(r.unseen, s)
+		}
+		o, ok := r.resolvedImages[s]
+		if ok {
+			return o, nil
+		}
+		t, err := name.NewTag(s, name.StrictValidation)
+		if err != nil {
+			return s, nil
+		}
+		auth, err := authn.DefaultKeychain.Resolve(t.Context())
+		if err != nil {
+			return s, nil
+		}
+		desc, err := remote.Get(t, remote.WithAuth(auth))
+		if err != nil {
+			return s, nil
+		}
+		resolved := fmt.Sprintf("%s/%s@%v", t.Context().RegistryStr(), t.Context().RepositoryStr(), desc.Digest)
+		r.resolvedImages[s] = resolved
+		return resolved, nil
 	}
 
 	resolved, err := r.resolveYAML(bytes.NewReader(t))

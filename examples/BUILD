@@ -15,11 +15,3 @@
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-py_binary(
-    name = "e2e_gc",
-    srcs = ["e2e_gc.py"],
-    main = "e2e_gc.py",
-    python_version = "PY3",
-    srcs_version = "PY3",
-)

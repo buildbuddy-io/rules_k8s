@@ -4,9 +4,10 @@ go 1.24.2
 
 require (
 	github.com/bazelbuild/rules_docker v0.25.0
+	github.com/bazelbuild/rules_go v0.53.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.20.3
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

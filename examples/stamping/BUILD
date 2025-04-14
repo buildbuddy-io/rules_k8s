@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
-load("@pip//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -40,12 +40,15 @@ k8s_object(
     template = ":configmap.yaml",
 )
 
-py_test(
+go_test(
     name = "substitution_test",
-    srcs = ["substitution_test.py"],
+    srcs = ["substitution_test.go"],
     data = [":substitution_stamping"],
-    python_version = "PY3",
+    x_defs = {
+        "k8sObjRunfilePath": "$(rlocationpath :substitution_stamping)",
+    },
     deps = [
-        requirement("pyyaml"),
+        "@in_gopkg_yaml_v3//:yaml_v3",
+        "@io_bazel_rules_go//go/runfiles",
     ],
 )
