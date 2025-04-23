@@ -420,25 +420,41 @@ type yamlDoc struct {
 // UnmarshalYAML loads an arbitrary YAML document which can be a YAML list or
 // a YAML map into the given YAML document.
 func (y *yamlDoc) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	if err := unmarshal(&y.vList); err == nil {
+	var finalErr error
+	err := unmarshal(&y.vList)
+	if err == nil {
 		return nil
 	}
-	if err := unmarshal(&y.vMap); err == nil {
+	finalErr = fmt.Errorf("unable to unmarshal to list: %v", err)
+
+	err = unmarshal(&y.vMap)
+	if err == nil {
 		return nil
 	}
-	if err := unmarshal(&y.vInt); err == nil {
+	finalErr = fmt.Errorf("%v\n unable to unmarshal to map: %v", finalErr, err)
+
+	err = unmarshal(&y.vInt)
+	if err == nil {
 		y.isInt = true
 		return nil
 	}
-	if err := unmarshal(&y.vBool); err == nil {
+	finalErr = fmt.Errorf("%v\n unable to unmarshal to int: %v", finalErr, err)
+
+	err = unmarshal(&y.vBool)
+	if err == nil {
 		y.isBool = true
 		return nil
 	}
-	if err := unmarshal(&y.vStr); err == nil {
+	finalErr = fmt.Errorf("%v\n unable to unmarshal to bool: %v", finalErr, err)
+
+	err = unmarshal(&y.vStr)
+	if err == nil {
 		y.isStr = true
 		return nil
 	}
-	return fmt.Errorf("unable to parse given blob as a YAML list, map or string, integer or boolean")
+	finalErr = fmt.Errorf("%v\n unable to unmarshal to string: %v", finalErr, err)
+
+	return fmt.Errorf("unable to parse given blob as a YAML list, map or string, integer or boolean: %v", finalErr)
 }
 
 // val gets the stored YAML value in this document.
