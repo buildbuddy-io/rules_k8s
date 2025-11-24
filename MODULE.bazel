@@ -12,14 +12,6 @@ bazel_dep(
     name = "rules_docker",
     repo_name = "io_bazel_rules_docker",
 )
-archive_override(
-    module_name = "rules_docker",
-    integrity = "sha256-weeds2FtoI9ugQo7q3YYOUnmkVxdmW9nS7GDV7G4EoM=",
-    strip_prefix = "rules_docker-af99acc68556f43ecb5b90b037480650d7d47c02",
-    # This is BuildBuddy fork of rules_docker with bzlmod support.
-    # Diff: https://github.com/bazelbuild/rules_docker/compare/master...buildbuddy-io:rules_docker:sluongng/bzlmod-enable
-    urls = ["https://github.com/buildbuddy-io/rules_docker/archive/af99acc68556f43ecb5b90b037480650d7d47c02.tar.gz"],
-)
 
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
@@ -45,14 +37,13 @@ use_repo(
 #####################################################################
 # docker
 #####################################################################
-container = use_extension("@io_bazel_rules_docker//:extensions.bzl", "container")
-container.pull(
+container_pull = use_repo_rule("@io_bazel_rules_docker//container:pull.bzl", "container_pull")
+container_pull(
     name = "go_image_static",
     digest = "sha256:ebd8cc37d22551dce0957ba8e58f03b22a8448bbf844c8c9ded4feef883b36bc",
     registry = "gcr.io",
     repository = "distroless/static",
 )
-use_repo(container, "go_image_static")
 
 #####################################################################
 # kubectl
