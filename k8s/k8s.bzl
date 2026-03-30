@@ -42,11 +42,11 @@ def k8s_repositories():
     maybe(
         http_archive,
         name = "io_bazel_rules_docker",
-        integrity = "sha256-A5jYBCeY4s0eJNYKrFYV6pnRSFekMRSilmr+xVF/Q+s=",
-        strip_prefix = "rules_docker-d517338f5a4e29a11b6077ec39e533a518424b53",
+        integrity = "sha256-wh370Ju1gf4zzaMjODXwHAB70i8KUWCqbLswLnasDhE=",
+        strip_prefix = "rules_docker-d4d9234dfec0c4b24542d0c7f8184a858fa7c52f",
         # This is our own fork of rules_docker with bzlmod support.
-        # Diff: https://github.com/bazelbuild/rules_docker/compare/master...buildbuddy-io:rules_docker:sluongng/bzlmod-enable
-        urls = ["https://github.com/buildbuddy-io/rules_docker/archive/d517338f5a4e29a11b6077ec39e533a518424b53.tar.gz"],
+        # Diff: https://github.com/bazelbuild/rules_docker/compare/master...buildbuddy-io:rules_docker:master
+        urls = ["https://github.com/buildbuddy-io/rules_docker/archive/d4d9234dfec0c4b24542d0c7f8184a858fa7c52f.tar.gz"],
     )
 
     maybe(
