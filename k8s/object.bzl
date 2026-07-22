@@ -22,13 +22,6 @@ load(
     "@io_bazel_rules_docker//skylib:label.bzl",
     _string_to_label = "string_to_label",
 )
-load(
-    "@io_bazel_rules_docker//skylib:path.bzl",
-    _get_runfile_path = "runfile",
-)
-
-def _runfiles(ctx, f):
-    return "${RUNFILES}/%s" % _get_runfile_path(ctx, f)
 
 def _deduplicate(iterable):
     """Performs a deduplication (similar to `list(set(...))`)
@@ -69,26 +62,26 @@ def _impl(ctx):
 
             image_spec = {"name": resolved_tag}
             if image.get("legacy"):
-                image_spec["tarball"] = _runfiles(ctx, image["legacy"])
+                image_spec["tarball"] = image["legacy"].short_path
                 all_inputs.append(image["legacy"])
 
             blobsums = image.get("blobsum", [])
-            image_spec["digest"] = ",".join([_runfiles(ctx, f) for f in blobsums])
+            image_spec["digest"] = ",".join([f.short_path for f in blobsums])
             all_inputs.extend(blobsums)
 
             diff_ids = image.get("diff_id", [])
-            image_spec["diff_id"] = ",".join([_runfiles(ctx, f) for f in diff_ids])
+            image_spec["diff_id"] = ",".join([f.short_path for f in diff_ids])
             all_inputs.extend(diff_ids)
 
             blobs = image.get("zipped_layer", [])
-            image_spec["compressed_layer"] = ",".join([_runfiles(ctx, f) for f in blobs])
+            image_spec["compressed_layer"] = ",".join([f.short_path for f in blobs])
             all_inputs.extend(blobs)
 
             uncompressed_blobs = image.get("unzipped_layer", [])
-            image_spec["uncompressed_layer"] = ",".join([_runfiles(ctx, f) for f in uncompressed_blobs])
+            image_spec["uncompressed_layer"] = ",".join([f.short_path for f in uncompressed_blobs])
             all_inputs.extend(uncompressed_blobs)
 
-            image_spec["config"] = _runfiles(ctx, image["config"])
+            image_spec["config"] = image["config"].short_path
             all_inputs.append(image["config"])
 
             # Quote the semi-colons so they don't complete the command.
@@ -103,7 +96,7 @@ def _impl(ctx):
         stamp_inputs = ctx.files.stamp_srcs
     else:
         stamp_inputs = [ctx.info_file, ctx.version_file]
-    stamp_args = " ".join(["--stamp-info-file=%s" % _runfiles(ctx, f) for f in stamp_inputs])
+    stamp_args = " ".join(["--stamp-info-file=%s" % f.short_path for f in stamp_inputs])
     all_inputs.extend(stamp_inputs)
 
     image_chroot_arg = ctx.attr.image_chroot
@@ -111,7 +104,7 @@ def _impl(ctx):
     if "{" in ctx.attr.image_chroot:
         image_chroot_file = ctx.actions.declare_file(ctx.label.name + ".image-chroot-name")
         _resolve(ctx, ctx.attr.image_chroot, image_chroot_file)
-        image_chroot_arg = "$(cat %s)" % _runfiles(ctx, image_chroot_file)
+        image_chroot_arg = "$(cat %s)" % image_chroot_file.short_path
         all_inputs.append(image_chroot_file)
 
     substitutions_file = ctx.actions.declare_file(ctx.label.name + ".substitutions.json")
@@ -135,10 +128,10 @@ def _impl(ctx):
                 for spec in image_specs
             ]),
             "%{resolver_args}": " ".join(ctx.attr.resolver_args or []),
-            "%{resolver}": _runfiles(ctx, ctx.executable.resolver),
+            "%{resolver}": ctx.executable.resolver.short_path,
             "%{stamp_args}": stamp_args,
-            "%{substitutions}": _runfiles(ctx, substitutions_file),
-            "%{yaml}": _runfiles(ctx, ctx.file.template),
+            "%{substitutions}": substitutions_file.short_path,
+            "%{yaml}": ctx.file.template.short_path,
         },
         output = ctx.outputs.executable,
     )
@@ -180,7 +173,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.cluster:
         cluster_file = ctx.actions.declare_file(ctx.label.name + ".cluster-name")
         _resolve(ctx, ctx.attr.cluster, cluster_file)
-        cluster_arg = "$(cat %s)" % _runfiles(ctx, cluster_file)
+        cluster_arg = "$(cat %s)" % cluster_file.short_path
         files.append(cluster_file)
 
     context_arg = ctx.attr.context
@@ -188,7 +181,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.context:
         context_file = ctx.actions.declare_file(ctx.label.name + ".context-name")
         _resolve(ctx, ctx.attr.context, context_file)
-        context_arg = "$(cat %s)" % _runfiles(ctx, context_file)
+        context_arg = "$(cat %s)" % context_file.short_path
         files.append(context_file)
 
     user_arg = ctx.attr.user
@@ -196,7 +189,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.user:
         user_file = ctx.actions.declare_file(ctx.label.name + ".user-name")
         _resolve(ctx, ctx.attr.user, user_file)
-        user_arg = "$(cat %s)" % _runfiles(ctx, user_file)
+        user_arg = "$(cat %s)" % user_file.short_path
         files.append(user_file)
 
     namespace_arg = ctx.attr.namespace
@@ -204,14 +197,14 @@ def _common_impl(ctx):
     if "{" in ctx.attr.namespace:
         namespace_file = ctx.actions.declare_file(ctx.label.name + ".namespace-name")
         _resolve(ctx, ctx.attr.namespace, namespace_file)
-        namespace_arg = "$(cat %s)" % _runfiles(ctx, namespace_file)
+        namespace_arg = "$(cat %s)" % namespace_file.short_path
         files.append(namespace_file)
 
     if namespace_arg:
         namespace_arg = "--namespace=\"" + namespace_arg + "\""
 
     if ctx.file.kubeconfig:
-        kubeconfig_arg = _runfiles(ctx, ctx.file.kubeconfig)
+        kubeconfig_arg = ctx.file.kubeconfig.short_path
         files.append(ctx.file.kubeconfig)
     else:
         kubeconfig_arg = ""
@@ -229,7 +222,7 @@ def _common_impl(ctx):
     else:
         kubectl_tool = kubectl_tool_info.tool_path
         if kubectl_tool_info.tool_target:
-            kubectl_tool = _runfiles(ctx, kubectl_tool_info.tool_target.files.to_list()[0])
+            kubectl_tool = kubectl_tool_info.tool_target.files.to_list()[0].short_path
             extrafiles = depset(transitive = [kubectl_tool_info.tool_target.files])
 
         substitutions = {
@@ -243,17 +236,17 @@ def _common_impl(ctx):
         }
 
         if hasattr(ctx.executable, "resolved"):
-            substitutions["%{resolve_script}"] = _runfiles(ctx, ctx.executable.resolved)
+            substitutions["%{resolve_script}"] = ctx.executable.resolved.short_path
             files.append(ctx.executable.resolved)
             extrafiles = depset(transitive = [ctx.attr.resolved[DefaultInfo].default_runfiles.files, extrafiles])
 
         if hasattr(ctx.executable, "reverser"):
-            substitutions["%{reverser}"] = _runfiles(ctx, ctx.executable.reverser)
+            substitutions["%{reverser}"] = ctx.executable.reverser.short_path
             files.append(ctx.executable.reverser)
             extrafiles = depset(transitive = [ctx.attr.reverser[DefaultInfo].default_runfiles.files, extrafiles])
 
         if hasattr(ctx.files, "unresolved"):
-            substitutions["%{unresolved}"] = _runfiles(ctx, ctx.file.unresolved)
+            substitutions["%{unresolved}"] = ctx.file.unresolved.short_path
             files.extend(ctx.files.unresolved)
 
         ctx.actions.expand_template(
