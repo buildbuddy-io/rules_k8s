@@ -105,7 +105,7 @@ def _impl(ctx):
     if "{" in ctx.attr.image_chroot:
         image_chroot_file = ctx.actions.declare_file(ctx.label.name + ".image-chroot-name")
         _resolve(ctx, ctx.attr.image_chroot, image_chroot_file)
-        image_chroot_arg = "$(cat %s)" % ctx.expand_location("../$(rlocationpath {})".format(image_chroot_file.owner))
+        image_chroot_arg = "$(cat %s)" % image_chroot_file.short_path
         all_inputs.append(image_chroot_file)
 
     substitutions_file = ctx.actions.declare_file(ctx.label.name + ".substitutions.json")
@@ -131,7 +131,7 @@ def _impl(ctx):
             "%{resolver_args}": " ".join(ctx.attr.resolver_args or []),
             "%{resolver}": ctx.expand_location("../$(rlocationpath {})".format(ctx.attr.resolver.label), [ctx.attr.resolver]),
             "%{stamp_args}": stamp_args,
-            "%{substitutions}": ctx.expand_location("../$(rlocationpath {})".format(substitutions_file.owner)),
+            "%{substitutions}": substitutions_file.short_path,
             "%{yaml}": ctx.expand_location("../$(rlocationpath {})".format(ctx.attr.template.label), [ctx.attr.template]),
         },
         output = ctx.outputs.executable,
@@ -174,7 +174,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.cluster:
         cluster_file = ctx.actions.declare_file(ctx.label.name + ".cluster-name")
         _resolve(ctx, ctx.attr.cluster, cluster_file)
-        cluster_arg = "$(cat %s)" % ctx.expand_location("../$(rlocationpath {})".format(cluster_file.owner))
+        cluster_arg = "$(cat %s)" % cluster_file.short_path
         files.append(cluster_file)
 
     context_arg = ctx.attr.context
@@ -182,7 +182,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.context:
         context_file = ctx.actions.declare_file(ctx.label.name + ".context-name")
         _resolve(ctx, ctx.attr.context, context_file)
-        context_arg = "$(cat %s)" % ctx.expand_location("../$(rlocationpath {})".format(context_file.owner))
+        context_arg = "$(cat %s)" % context_file.short_path
         files.append(context_file)
 
     user_arg = ctx.attr.user
@@ -190,7 +190,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.user:
         user_file = ctx.actions.declare_file(ctx.label.name + ".user-name")
         _resolve(ctx, ctx.attr.user, user_file)
-        user_arg = "$(cat %s)" % ctx.expand_location("../$(rlocationpath {})".format(user_file.owner))
+        user_arg = "$(cat %s)" % user_file.short_path
         files.append(user_file)
 
     namespace_arg = ctx.attr.namespace
@@ -198,7 +198,7 @@ def _common_impl(ctx):
     if "{" in ctx.attr.namespace:
         namespace_file = ctx.actions.declare_file(ctx.label.name + ".namespace-name")
         _resolve(ctx, ctx.attr.namespace, namespace_file)
-        namespace_arg = "$(cat %s)" % ctx.expand_location("../$(rlocationpath {})".format(namespace_file.owner))
+        namespace_arg = "$(cat %s)" % namespace_file.short_path
         files.append(namespace_file)
 
     if namespace_arg:
