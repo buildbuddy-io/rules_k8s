@@ -13,14 +13,6 @@
 # limitations under the License.
 """An implementation of k8s_object for interacting with an object of kind."""
 
-load(
-    "@io_bazel_rules_docker//skylib:path.bzl",
-    _get_runfile_path = "runfile",
-)
-
-def _runfiles(ctx, f):
-    return "PYTHON_RUNFILES=${RUNFILES} ${RUNFILES}/%s $@" % _get_runfile_path(ctx, f)
-
 def _run_all_impl(ctx):
     if ctx.attr.wrap_exits:
         _prefix = "code=0"
@@ -32,7 +24,7 @@ def _run_all_impl(ctx):
         _suffix = ""
 
     _statements = ("\n" + ctx.attr.delimiter).join([_prefix] +
-                                                   [_runfiles(ctx, exe.files_to_run.executable) + _append for exe in ctx.attr.objects] +
+                                                   [exe.files_to_run.executable.short_path + " $@" + _append for exe in ctx.attr.objects] +
                                                    [_suffix])
 
     ctx.actions.expand_template(

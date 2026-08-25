@@ -15,20 +15,7 @@
 # limitations under the License.
 set -euo pipefail
 
-function guess_runfiles() {
-    if [ -d ${BASH_SOURCE[0]}.runfiles ]; then
-        # Runfiles are adjacent to the current script.
-        echo "$( cd ${BASH_SOURCE[0]}.runfiles && pwd )"
-    else
-        # The current script is within some other script's runfiles.
-        mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        echo $mydir | sed -e 's|\(.*\.runfiles\)/.*|\1|'
-    fi
-}
-
 function exe() { echo "\$ ${@/eval/}" ; "$@" ; }
 
-RUNFILES="${PYTHON_RUNFILES:-$(guess_runfiles)}"
-
-PYTHON_RUNFILES=${RUNFILES} %{resolve_script} | \
+%{resolve_script} | \
   exe %{kubectl_tool} --kubeconfig="%{kubeconfig}" --cluster="%{cluster}" --context="%{context}" --user="%{user}" %{namespace_arg} replace $@ -f -
